@@ -48,21 +48,33 @@ module Trackerific
       details = track_reply["Package"]
       # convert them into Trackerific::Events
       events = []
-      details["Event"].each do |e|
-        date = Time.parse("#{e["Date"]} #{e["Time"]}")
-        desc = e["Description"]
-        addr = e["Address"]
+      if details["Event"].is_a?(Hash)
+        date = Time.parse("#{details["Event"]["Date"]} #{details["Event"]["Time"]}")
+        desc = details["Event"]["Description"]
+        addr = details["Event"]["Address"]
         events << Trackerific::Event.new(
           :date         => date,
           :description  => desc,
           :location     => "#{addr["StateOrProvinceCode"]} #{addr["PostalCode"]}"
         )
+      elsif details["Event"].is_a?(Array)
+        details["Event"].each do |e|
+          date = Time.parse("#{e["Date"]} #{e["Time"]}")
+          desc = e["Description"]
+          addr = e["Address"]
+          events << Trackerific::Event.new(
+            :date         => date,
+            :description  => desc,
+            :location     => "#{addr["StateOrProvinceCode"]} #{addr["PostalCode"]}"
+          )
+        end
       end
       # Return a Trackerific::Details containing all the events
       Trackerific::Details.new(
         :package_id => details["TrackingNumber"],
         :summary    => details["StatusDescription"],
-        :events     => events
+        :events     => events,
+        :weight     => {:weight => details['Weight'], :units => details['WeightUnits']}
       )
     end
     
