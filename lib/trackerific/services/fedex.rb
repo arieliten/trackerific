@@ -70,11 +70,13 @@ module Trackerific
         end
       end
       # Return a Trackerific::Details containing all the events
+      delivered_at = details['DeliveredDate'] ? Time.parse("#{details['DeliveredDate']} #{details['DeliveredTime']}") : nil
       Trackerific::Details.new(
-        :package_id => details["TrackingNumber"],
-        :summary    => details["StatusDescription"],
-        :events     => events,
-        :weight     => {:weight => details['Weight'], :units => details['WeightUnits']}
+        :package_id   => details["TrackingNumber"],
+        :summary      => details["StatusDescription"],
+        :events       => events,
+        :delivered_at => delivered_at,
+        :weight       => {:weight => details['Weight'], :units => details['WeightUnits']}
       )
     end
     
